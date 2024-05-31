@@ -8,6 +8,7 @@ tokio = { version = "1", features = ["full"] }
 dotenv = "0.15"
 anyhow = "1.0"
 russh = "0.43"
+russh-keys = "0.43"
 mysql_async = "0.34"
 log = "0.4"
 env_logger = "0.11"

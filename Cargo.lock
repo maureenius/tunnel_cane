@@ -2603,6 +2603,7 @@ dependencies = [
  "log",
  "mysql_async",
  "russh",
+ "russh-keys",
  "tokio",
 ]
 

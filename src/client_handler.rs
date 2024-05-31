@@ -1,9 +1,10 @@
 use std::{sync::Arc, time::Duration};
 
 use russh::{client, ChannelMsg, Disconnect};
+use russh_keys::load_secret_key;
 use tokio::io::AsyncWriteExt;
 
-use crate::host::Host;
+use crate::host::{HostWithKey, HostWithPassword};
 
 pub struct ClientHandler;
 impl client::Handler for ClientHandler {
@@ -15,7 +16,7 @@ pub struct Session {
 }
 impl Session {
     pub async fn connect(
-        host: Host
+        host: HostWithPassword
     ) -> anyhow::Result<Self> {
         let config = Arc::new(client::Config {
             inactivity_timeout: Some(Duration::from_secs(60)),
@@ -26,6 +27,26 @@ impl Session {
 
         let mut session = client::connect(config, host.addrs(), handler).await?;
         let auth = session.authenticate_password(host.username, host.password).await?;
+        if !auth {
+            anyhow::bail!("Authentication failed");
+        }
+
+        Ok(Self { session })
+    }
+
+    pub async fn connect_with_key(
+        host: HostWithKey
+    ) -> anyhow::Result<Self> {
+        let config = Arc::new(client::Config {
+            inactivity_timeout: Some(Duration::from_secs(60)),
+            ..Default::default()
+        });
+
+        let handler = ClientHandler;
+
+        let mut session = client::connect(config, host.addrs(), handler).await?;
+        let key = load_secret_key(host.key, None)?;
+        let auth = session.authenticate_publickey(host.username, Arc::new(key)).await?;
         if !auth {
             anyhow::bail!("Authentication failed");
         }

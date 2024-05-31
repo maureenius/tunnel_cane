@@ -1,3 +1,5 @@
+use std::path::{Path, PathBuf};
+
 #[derive(Debug, Clone)]
 pub struct Hostname(String);
 #[derive(Debug, Clone)]
@@ -64,20 +66,43 @@ impl Into<String> for Password {
 }
 
 #[derive(Debug)]
-pub struct Host {
+pub struct HostWithPassword {
     pub hostname: Hostname,
     pub port: Port,
     pub username: Username,
     pub password: Password,
 }
 
-impl Host {
+impl HostWithPassword {
     pub fn new(hostname: &str, port: u16, username: &str, password: &str) -> Self {
-        Host {
+        HostWithPassword {
             hostname: Hostname::new(hostname),
             port: Port::new(port),
             username: Username::new(username),
             password: Password::new(password),
+        }
+    }
+
+    pub fn addrs(&self) -> (String, u16) {
+        (self.hostname.clone().into(), self.port.clone().into())
+    }
+}
+
+#[derive(Debug)]
+pub struct HostWithKey {
+    pub hostname: Hostname,
+    pub port: Port,
+    pub username: Username,
+    pub key: PathBuf,
+}
+
+impl HostWithKey {
+    pub fn new(hostname: &str, port: u16, username: &str, key: &Path) -> Self {
+        HostWithKey {
+            hostname: Hostname::new(hostname),
+            port: Port::new(port),
+            username: Username::new(username),
+            key: key.to_path_buf(),
         }
     }
 
